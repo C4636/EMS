@@ -3,9 +3,13 @@
 
 #include "stm32f4xx.h"
 
+/* TIM3 CH3 = PB0, PWM 10kHz */
 #define TB6612_TIM                  TIM3
 #define TB6612_TIM_CLK              RCC_APB1Periph_TIM3
 #define TB6612_TIM_CHANNEL          TIM_Channel_3
+#define TB6612_TIM_PSC              84      /* 84MHz/(84*100)=10kHz */
+#define TB6612_TIM_ARR              100     /* 0-100 duty */
+#define TB6612_TIM_CCRX             TIM3->CCR3
 
 #define TB6612_PWMA_PORT            GPIOB
 #define TB6612_PWMA_PIN             GPIO_Pin_0

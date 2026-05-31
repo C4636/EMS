@@ -3,30 +3,19 @@
 
 #include "stm32f4xx.h"
 
-/* I2C1 引脚: PB6(SCL) + PB7(SDA), 可改 PB8/PB9 */
-#define OLED_I2C                I2C1
-#define OLED_I2C_CLK            RCC_APB1Periph_I2C1
-#define OLED_I2C_SPEED          400000
-
-#define OLED_SCL_PORT           GPIOB
-#define OLED_SCL_PIN            GPIO_Pin_6
-#define OLED_SCL_SOURCE         GPIO_PinSource6
-#define OLED_SCL_AF             GPIO_AF_I2C1
-
-#define OLED_SDA_PORT           GPIOB
-#define OLED_SDA_PIN            GPIO_Pin_7
-#define OLED_SDA_SOURCE         GPIO_PinSource7
-#define OLED_SDA_AF             GPIO_AF_I2C1
-
-#define OLED_I2C_GPIO_CLK       RCC_AHB1Periph_GPIOB
-
-/* SSD1306 7-bit 地址 (DC引脚接地=0x3C, 接VCC=0x3D) */
-#define OLED_ADDR               0x3C
+#define OLED_ID         0x78
+#define OLED_WR_CMD     0x00
+#define OLED_WR_DATA    0x40
 
 void OLED_Init(void);
-void OLED_Clear(void);
-void OLED_ShowString(uint8_t x, uint8_t y, const char *str);
-void OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len);
+void OLED_SetPos(uint8_t x, uint8_t y);
+void OLED_Fill(uint8_t fill_data);
+void OLED_CLS(void);
+void OLED_ON(void);
+void OLED_OFF(void);
+void OLED_ShowStr(uint8_t x, uint8_t y, const char *ch, uint8_t text_size);
+void OLED_ShowCN(uint8_t x, uint8_t y, uint8_t n);
+void OLED_DrawBMP(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t BMP[]);
 void OLED_Refresh(void);
 
 #endif

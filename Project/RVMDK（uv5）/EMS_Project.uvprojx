@@ -807,6 +807,16 @@
               <FilePath>..\..\User\dwt_delay\bsp_dwt_delay.c</FilePath>
             </File>
             <File>
+              <FileName>core_delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\dwt_delay\core_delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_iic_debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\iic\bsp_iic_debug.c</FilePath>
+            </File>
+            <File>
               <FileName>bsp_dht11.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\dht11\bsp_dht11.c</FilePath>
@@ -830,6 +840,16 @@
               <FileName>bsp_tb6612.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\tb6612\bsp_tb6612.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>DOC</GroupName>
+          <Files>
+            <File>
+              <FileName>必读说明.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\必读说明.txt</FilePath>
             </File>
           </Files>
         </Group>
