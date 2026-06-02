@@ -44,8 +44,10 @@ extern __IO uint16_t MQ_ADC_Values[2];
 
 /* system state */
 static DHT11_Data_TypeDef dht11;
-static uint8_t  alarm_active  = 0;
-static uint8_t  fan_running   = 0;
+static uint8_t  alarm_active      = 0;
+static uint8_t  prev_alarm_active = 0;
+static uint8_t  fan_running       = 0;
+static uint8_t  prev_dht11_ok     = 1;
 
 /* helpers */
 static void OLED_ShowInt(uint8_t x, uint8_t y, int val, uint8_t size)
@@ -83,17 +85,31 @@ static void OLED_ShowTitle(void)
 
 static void OLED_ShowEnv(float t_int, float t_dec, float h_int, float h_dec)
 {
+    /* ── temperature (page 2) ── */
     OLED_ShowStr(0, 2, "T:", 1);
+    OLED_FillBytes(12, 2, 4, 0x00);   /* clear "T:"→int gap */
+    OLED_FillBytes(16, 2, 18, 0x00);  /* clear int field (max 3 digits) */
     OLED_ShowInt(16, 2, (int)t_int, 1);
+    OLED_FillBytes(34, 2, 6, 0x00);   /* clear int→"." gap */
     OLED_ShowStr(40, 2, ".", 1);
+    OLED_FillBytes(46, 2, 2, 0x00);   /* clear "."→decimal gap */
     OLED_ShowInt(48, 2, (int)t_dec, 1);
+    OLED_FillBytes(54, 2, 10, 0x00);  /* clear decimal→"C" gap */
     OLED_ShowStr(64, 2, "C", 1);
+    OLED_FillBytes(70, 2, 10, 0x00);  /* clear "C"→fan gap */
 
+    /* ── humidity (page 4) ── */
     OLED_ShowStr(0, 4, "H:", 1);
+    OLED_FillBytes(12, 4, 4, 0x00);
+    OLED_FillBytes(16, 4, 18, 0x00);
     OLED_ShowInt(16, 4, (int)h_int, 1);
+    OLED_FillBytes(34, 4, 6, 0x00);
     OLED_ShowStr(40, 4, ".", 1);
+    OLED_FillBytes(46, 4, 2, 0x00);
     OLED_ShowInt(48, 4, (int)h_dec, 1);
+    OLED_FillBytes(54, 4, 10, 0x00);
     OLED_ShowStr(64, 4, "%", 1);
+    OLED_FillBytes(70, 4, 58, 0x00);  /* clear rest of page 4 */
 }
 
 static void OLED_ShowGas(float mq135, float mq2)
@@ -114,7 +130,7 @@ static void OLED_ShowAlarm(void)
 static void OLED_ShowFan(uint8_t on)
 {
     if (on)
-        OLED_ShowStr(80, 2, "FAN:ON", 1);
+        OLED_ShowStr(80, 2, "FAN:ON ", 1);  /* trailing space = 7 chars, matches "FAN:OFF" */
     else
         OLED_ShowStr(80, 2, "FAN:OFF", 1);
 }
@@ -231,9 +247,12 @@ int main(void)
         if (alarm_active) {
             OLED_ShowAlarm();
         } else {
+            /* alarm just cleared → clear page 7 (bottom halves of 8x16 text) */
+            if (prev_alarm_active) OLED_ClearPage(7);
             OLED_ShowGas(mq135_ppm, mq2_ppm);
         }
         OLED_ShowFan(fan_running);
+        prev_alarm_active = alarm_active;
 
         DWT_Delay_ms(2000);
     }

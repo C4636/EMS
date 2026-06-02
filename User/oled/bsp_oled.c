@@ -82,6 +82,20 @@ void OLED_Fill(uint8_t fill_data)
 
 void OLED_CLS(void) { OLED_Fill(0x00); }
 
+void OLED_ClearPage(uint8_t y)
+{
+    uint8_t i;
+    OLED_SetPos(0, y);
+    for (i = 0; i < 128; i++) Oled_Write_Data(0x00);
+}
+
+void OLED_FillBytes(uint8_t x, uint8_t y, uint8_t len, uint8_t data)
+{
+    uint8_t i;
+    OLED_SetPos(x, y);
+    for (i = 0; i < len; i++) Oled_Write_Data(data);
+}
+
 void OLED_ON(void)
 {
     Oled_Write_Cmd(0x8D); Oled_Write_Cmd(0x14);

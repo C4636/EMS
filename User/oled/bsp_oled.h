@@ -11,6 +11,8 @@ void OLED_Init(void);
 void OLED_SetPos(uint8_t x, uint8_t y);
 void OLED_Fill(uint8_t fill_data);
 void OLED_CLS(void);
+void OLED_ClearPage(uint8_t y);
+void OLED_FillBytes(uint8_t x, uint8_t y, uint8_t len, uint8_t data);
 void OLED_ON(void);
 void OLED_OFF(void);
 void OLED_ShowStr(uint8_t x, uint8_t y, const char *ch, uint8_t text_size);
