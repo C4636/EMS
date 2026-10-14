@@ -86,8 +86,14 @@ Alarm thresholds are defined as macros at the top of [main.c](User/main.c):
 | `MQ135_ALARM` | 500 | MQ135 PPM > 500 |
 | `MQ2_ALARM` | 5000 | MQ2 PPM > 5000 |
 | `FAN_SPEED` | 60 | Fan duty cycle 60% (0-100) |
+| `SENSOR_ONLINE_PPM` | 1.0 | Minimum PPM for an MQ sensor to count as "online" — gates both DO-pin alarms |
 
-`CheckAlarm()` evaluates five conditions (temp, MQ135 PPM, MQ2 PPM, MQ135 DO pin, MQ2 DO pin). DO pins are active-low (LOW = gas concentration exceeded the hardware potentiometer threshold). Any single condition triggers alarm.
+`CheckAlarm()` evaluates five conditions — temp, MQ135 PPM, MQ2 PPM, MQ135 DO pin, MQ2 DO pin — with the PPM and DO conditions evaluated **independently**:
+
+- **PPM conditions**: `mq135 > MQ135_ALARM` and `mq2 > MQ2_ALARM` each trigger on their own.
+- **DO conditions**: active-low (LOW = gas above the hardware potentiometer threshold), but only trusted while the sensor is online: `mq_do == 0 && ppm > SENSOR_ONLINE_PPM`. An unpowered or unplugged MQ sensor pulls DO low *and* reads ADC=0, so without this gate a missing sensor would start the fan permanently.
+
+`MQ135_Get_PPM()` / `MQ2_Get_PPM()` return `0.0f` as soon as `Vout < 0.01f` — the power-law computation `(Vc - vrl) * RL / vrl` would otherwise divide by zero and yield `inf`/`NaN`. `CheckAlarm()` additionally prints `[WARN] ... offline (ADC=0), check power/wiring` to USART1 when a sensor reads 0.
 
 Alarm state transitions:
 - **Normal → Alarm**: sets LED red, starts fan forward at `FAN_SPEED`%, OLED shows `"** ALARM **"` on page 6-7 (8×16 font)
@@ -133,7 +139,7 @@ while(1) every 2 seconds:
   2. MQ135_Get_PPM()              → reads MQ_ADC_Values[1] from DMA, computes PPM via power law
   3. MQ2_Get_PPM()                → reads MQ_ADC_Values[0] from DMA, computes PPM via power law
   4. GPIO_ReadInputDataBit()      → read MQ135 DO (PC4) and MQ2 DO (PC5)
-  5. CheckAlarm()                 → evaluate 5 conditions, printf alarm messages, return 0/1
+  5. CheckAlarm()                 → evaluate PPM thresholds + DO pins (gated by the sensor-online check), printf alarm/offline messages, return 0/1
   6. Fan control                  → start/stop based on alarm_active state (with edge detection)
   7. LED control                  → { LED_RED; } or { LED_GREEN; } (braces required — these are multi-statement macros)
   8. printf() to USART1           → single-line CSV-style: "T=... H=... MQ135=... MQ2=... DO135=... DO2=... [ALARM!]"

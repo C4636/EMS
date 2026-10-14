@@ -162,7 +162,7 @@ main()
         ├── MQ135_Get_PPM()      // 从 DMA 缓冲读 ADC, 幂函数计算
         ├── MQ2_Get_PPM()        // 同上
         ├── GPIO_ReadInputDataBit() 查 DO 引脚状态
-        ├── CheckAlarm()         // 四重判断: 温度 + MQ135 + MQ2 + DO
+        ├── CheckAlarm()         // PPM 阈值 + DO(仅传感器在线时采信)
         ├── 超限 → TB6612_Forward() + SetSpeed(60%)
         │        LED_RED, OLED 显示 "** ALARM **"
         └── 正常 → TB6612_Stop(), LED_GREEN, OLED 显示实时浓度
@@ -177,16 +177,19 @@ main()
 | 温度 | > 30°C | `TEMP_ALARM` | 风扇 ON |
 | MQ135 PPM | > 500 | `MQ135_ALARM` | 风扇 ON |
 | MQ2 PPM | > 5000 | `MQ2_ALARM` | 风扇 ON |
-| MQ135 DO | = LOW | 硬件阈值 | 风扇 ON |
-| MQ2 DO | = LOW | 硬件阈值 | 风扇 ON |
+| MQ135 DO | = LOW **且** PPM > 1.0 | 硬件阈值 + `SENSOR_ONLINE_PPM` | 风扇 ON |
+| MQ2 DO | = LOW **且** PPM > 1.0 | 硬件阈值 + `SENSOR_ONLINE_PPM` | 风扇 ON |
+
+> **DO 判定的前提**：DO 引脚低有效，但只有在传感器**在线**（PPM > `SENSOR_ONLINE_PPM`）时才采信。传感器未供电或未接线时 ADC 读到 0、DO 同时被拉低，若不加此限制会误启动风扇。此时 `MQ135_Get_PPM()` / `MQ2_Get_PPM()` 直接返回 0（避免除零得到 inf/NaN），串口打印 `[WARN] ... offline (ADC=0), check power/wiring`。
 
 **修改阈值**：打开 `User\main.c`，修改顶部宏定义：
 
 ```c
-#define TEMP_ALARM      30      // 温度阈值 (°C)
-#define MQ135_ALARM     500     // MQ135 阈值 (ppm)
-#define MQ2_ALARM       5000    // MQ2 阈值 (ppm)
-#define FAN_SPEED       60      // 风扇转速 (0-100%)
+#define TEMP_ALARM        30      // 温度阈值 (°C)
+#define MQ135_ALARM       500     // MQ135 阈值 (ppm)
+#define MQ2_ALARM         5000    // MQ2 阈值 (ppm)
+#define FAN_SPEED         60      // 风扇转速 (0-100%)
+#define SENSOR_ONLINE_PPM 1.0f    // 传感器在线判定下限 (ppm)
 ```
 
 ---
@@ -405,6 +408,7 @@ EMS_Project/
 | DHT11 读取失败 | 上拉电阻缺失, 时序受干扰 | 检查 PA6 外接 4.7kΩ 上拉, 缩短杜邦线 |
 | MQ 传感器读数全 0 | 传感器未供电或未预热 | 检查 5V 供电, 等待 1-2 分钟预热 |
 | MQ PPM 值恒定为 0 | ADC DMA 未启动 | 确认 `MQ135_Init()` 在 main 中已调用 |
+| 串口打印 `[WARN] ... offline (ADC=0)` | 传感器未供电或未接线, ADC 读到 0 | 检查 5V 供电与 AO 接线; 此告警**不会**启动风扇 |
 | OLED 无显示 | I2C 无应答, 上拉缺失 | 检查 PB6/PB7 接线 + 外接 4.7kΩ 上拉 |
 | OLED 花屏 | SSD1306 初始化序列有误 | 确认 `OLED_Init()` 完整调用 |
 | 风扇不转 | STBY 未拉高, 电机电源不足 | 检查 PC2=高电平, VM 供电电压 5~12V |
