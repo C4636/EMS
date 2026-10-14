@@ -1,0 +1,53 @@
+graph LR
+    subgraph CHIP["　　霸天虎 STM32F407ZGTx　　"]
+        direction LR
+        subgraph LEFT_PINS[" "]
+            direction TB
+            P1(("PA6<br/>GPIO"))
+            P2(("PA4<br/>ADC1_CH4"))
+            P3(("PC4<br/>GPIO IN"))
+            P4(("PA1<br/>ADC1_CH1"))
+            P5(("PC5<br/>GPIO IN"))
+            P6(("PB0<br/>TIM3_CH3"))
+            P7(("PC0<br/>GPIO"))
+            P8(("PC1<br/>GPIO"))
+            P9(("PC2<br/>GPIO"))
+        end
+        subgraph RIGHT_PINS[" "]
+            direction TB
+            R1(("PA9<br/>USART1_TX"))
+            R2(("PA10<br/>USART1_RX"))
+            R3(("PB6<br/>I2C1_SCL"))
+            R4(("PB7<br/>I2C1_SDA"))
+            R5(("PF6<br/>GPIO"))
+            R6(("PF7<br/>GPIO"))
+            R7(("PF8<br/>GPIO"))
+        end
+    end
+
+    DHT11["<b>DHT11</b><br/>温湿度<br/>DATA"]:::sensor -.-> P1
+    MQ135_AO["<b>MQ135</b><br/>AO"]:::sensor -.-> P2
+    MQ135_DO["<b>MQ135</b><br/>DO"]:::sensor -.-> P3
+    MQ2_AO["<b>MQ2</b><br/>AO"]:::sensor -.-> P4
+    MQ2_DO["<b>MQ2</b><br/>DO"]:::sensor -.-> P5
+    TB6612_P["<b>TB6612</b><br/>PWMA"]:::motor -.-> P6
+    TB6612_A1["<b>TB6612</b><br/>AIN1"]:::motor -.-> P7
+    TB6612_A2["<b>TB6612</b><br/>AIN2"]:::motor -.-> P8
+    TB6612_S["<b>TB6612</b><br/>STBY"]:::motor -.-> P9
+
+    R1 -.-> USART_TX["USART1 TX<br/>115200"]:::dev
+    R2 -.-> USART_RX["USART1 RX<br/>115200"]:::dev
+    R3 -.-> OLED_SCL["OLED SCL<br/>I2C1"]:::dev
+    R4 -.-> OLED_SDA["OLED SDA<br/>I2C1"]:::dev
+    R5 -.-> LED_R["LED R<br/>低电平亮"]:::dev
+    R6 -.-> LED_G["LED G<br/>低电平亮"]:::dev
+    R7 -.-> LED_B["LED B<br/>低电平亮"]:::dev
+
+    classDef sensor fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    classDef motor fill:#F8BBD0,stroke:#C2185B,stroke-width:2px
+    classDef dev fill:#FFE0B2,stroke:#F57C00,stroke-width:2px
+    classDef pin fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
+
+    style CHIP fill:#E3F2FD,stroke:#1976D2,stroke-width:3px
+    style LEFT_PINS fill:none,stroke:none
+    style RIGHT_PINS fill:none,stroke:none

@@ -70,18 +70,18 @@ Project\RVMDK（uv5）\EMS_Project.uvprojx
 
 ```
                       霸天虎 STM32F407ZGTx
-           ┌──────────────────────────────────────┐
-      DHT11 │ PA6  ○ (DATA)               ○  PA9  │ USART1 TX
+            ┌──────────────────────────────────────┐
+      DHT11 │ PA6  ○ (DATA)                ○  PA9  │ USART1 TX
             │                              ○ PA10  │ USART1 RX
       MQ135 │ PA4  ○ (AO/ADC1_CH4)                 │
-            │ PC4  ○ (DO/GPIO输入)          ○  PB6  │ OLED SCL (I2C1)
+            │ PC4  ○ (DO/GPIO输入)          ○  PB6 │ OLED SCL (I2C1)
       MQ2   │ PA1  ○ (AO/ADC1_CH1)                 │
-            │ PC5  ○ (DO/GPIO输入)          ○  PB7  │ OLED SDA (I2C1)
+            │ PC5  ○ (DO/GPIO输入)          ○  PB7 │ OLED SDA (I2C1)
      TB6612 │ PB0  ○ (PWMA/TIM3_CH3)               │
-    (风扇)  │ PC0  ○ (AIN1)                 ○  PF6  │ LED R (低电平亮)
-            │ PC1  ○ (AIN2)                 ○  PF7  │ LED G (低电平亮)
-            │ PC2  ○ (STBY/高电平使能)       ○  PF8  │ LED B (低电平亮)
-           └──────────────────────────────────────┘
+    (风扇)  │ PC0  ○ (AIN1)                 ○  PF6 │ LED R
+           │ PC1   ○ (AIN2)                 ○  PF7 │ LED G
+           │ PC2   ○ (STBY/高电平使能)       ○  PF8 │ LED B
+           └───────────────────────────────────────┘
 ```
 
 ### 详细接线表

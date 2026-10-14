@@ -1,0 +1,50 @@
+graph TB
+    subgraph SENSORS[" 传感器层 (Sensor Layer)"]
+        DHT11["<b>DHT11 温湿度传感器</b><br/>DATA: PA6<br/>协议: One-Wire 单总线"]
+        MQ135["<b>MQ135 空气质量</b><br/>AO: PA4 (ADC1_CH4)<br/>DO: PC4"]
+        MQ2["<b>MQ2 烟雾检测</b><br/>AO: PA1 (ADC1_CH1)<br/>DO: PC5"]
+    end
+
+    subgraph MCU["<b> STM32F407ZGTx（ARM Cortex-M4, 168MHz）</b>"]
+        GPIO["<b>GPIO</b><br/>PA6 输入/输出<br/>模式动态切换"]
+        ADC["<b>ADC1 + DMA2</b><br/>Stream0, CH1+CH4<br/>双通道扫描"]
+        I2C["<b>I2C1</b><br/>400kHz<br/>PB6(SCL)/PB7(SDA)"]
+        TIM["<b>TIM3 CH3</b><br/>PWM 10kHz<br/>PB0"]
+    end
+
+    subgraph OUTPUT[" 输出与执行层 (Output Layer)"]
+        OLED["<b>SSD1306 OLED</b><br/>128×64 像素<br/>I2C 地址 0x78"]
+        LED["<b>RGB LED</b><br/>PF6(R) PF7(G) PF8(B)<br/>红=告警 绿=正常"]
+        TB6612["<b>TB6612FNG 电机驱动</b><br/>PWMA: PB0<br/>AIN1: PC0  AIN2: PC1<br/>STBY: PC2"]
+        FAN["<b>直流散热风扇</b><br/>正转排风<br/>60% 占空比"]
+        USART["<b>USART1 串口</b><br/>TX: PA9  RX: PA10<br/>115200-8-N-1"]
+    end
+
+    DHT11 -->|"1-Wire<br/>数据线"| GPIO
+    MQ135 -->|"ADC1_CH4<br/>模拟信号"| ADC
+    MQ2 -->|"ADC1_CH1<br/>模拟信号"| ADC
+    MQ135 -->|"DO 数字信号"| GPIO
+    MQ2 -->|"DO 数字信号"| GPIO
+
+    I2C -->|"I2C 总线"| OLED
+    TIM -->|"PWM 调速"| TB6612
+    TB6612 -->|"H桥驱动"| FAN
+    GPIO -->|"GPIO 输出"| LED
+
+    GPIO -.->|"printf 重定向<br/>fputc()"| USART
+
+    style SENSORS fill:#E8F5E9,stroke:#4CAF50
+    style MCU fill:#E3F2FD,stroke:#2196F3
+    style OUTPUT fill:#FFF3E0,stroke:#FF9800
+    style DHT11 fill:#C8E6C9,stroke:#388E3C
+    style MQ135 fill:#C8E6C9,stroke:#388E3C
+    style MQ2 fill:#C8E6C9,stroke:#388E3C
+    style GPIO fill:#BBDEFB,stroke:#1976D2
+    style ADC fill:#BBDEFB,stroke:#1976D2
+    style I2C fill:#BBDEFB,stroke:#1976D2
+    style TIM fill:#BBDEFB,stroke:#1976D2
+    style OLED fill:#FFE0B2,stroke:#F57C00
+    style LED fill:#FFE0B2,stroke:#F57C00
+    style TB6612 fill:#F8BBD0,stroke:#C2185B
+    style FAN fill:#F8BBD0,stroke:#C2185B
+    style USART fill:#FFE0B2,stroke:#F57C00
