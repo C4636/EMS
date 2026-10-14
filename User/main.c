@@ -135,23 +135,50 @@ static void OLED_ShowFan(uint8_t on)
         OLED_ShowStr(80, 2, "FAN:OFF", 1);
 }
 
+/* minimum PPM to consider sensor as "online" */
+#define SENSOR_ONLINE_PPM  1.0f
+
 /* check alarm conditions, return 1 if any alarm */
 static uint8_t CheckAlarm(float temp, float mq135, float mq2,
                           uint8_t mq135_do, uint8_t mq2_do)
 {
     uint8_t alarm = 0;
+
     if (temp > TEMP_ALARM) {
         printf("  [ALARM] Temp %.1fC > %dC\r\n", temp, TEMP_ALARM);
         alarm = 1;
     }
-    if (mq135 > MQ135_ALARM || mq135_do == 0) {
+
+    /* MQ135: PPM threshold */
+    if (mq135 > MQ135_ALARM) {
         printf("  [ALARM] MQ135 %.1fppm > %dppm\r\n", mq135, MQ135_ALARM);
         alarm = 1;
     }
-    if (mq2 > MQ2_ALARM || mq2_do == 0) {
+    /* MQ135: DO alarm — only trust DO when sensor is online */
+    if (mq135_do == 0 && mq135 > SENSOR_ONLINE_PPM) {
+        printf("  [ALARM] MQ135 DO triggered (PPM=%.1f)\r\n", mq135);
+        alarm = 1;
+    }
+
+    /* MQ2: PPM threshold */
+    if (mq2 > MQ2_ALARM) {
         printf("  [ALARM] MQ2 %.1fppm > %dppm\r\n", mq2, MQ2_ALARM);
         alarm = 1;
     }
+    /* MQ2: DO alarm — only trust DO when sensor is online */
+    if (mq2_do == 0 && mq2 > SENSOR_ONLINE_PPM) {
+        printf("  [ALARM] MQ2 DO triggered (PPM=%.1f)\r\n", mq2);
+        alarm = 1;
+    }
+
+    /* sensor offline warning — ADC returns 0 when sensor not powered/connected */
+    if (mq135 <= 0.0f && mq2 <= 0.0f)
+        printf("  [WARN] Both MQ sensors offline (ADC=0), check power/wiring\r\n");
+    else if (mq135 <= 0.0f)
+        printf("  [WARN] MQ135 offline (ADC=0), check power/wiring\r\n");
+    else if (mq2 <= 0.0f)
+        printf("  [WARN] MQ2 offline (ADC=0), check power/wiring\r\n");
+
     return alarm;
 }
 
