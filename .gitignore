@@ -59,3 +59,6 @@ Output/
 
 # Documents
 *.docx
+
+# Keil MDK per-user window layout (machine-specific)
+*.uvguix.*
